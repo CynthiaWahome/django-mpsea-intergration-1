@@ -1,12 +1,11 @@
 from django.http import HttpResponse
 import requests
 from requests.auth import HTTPBasicAuth
-import json
-from . credentials import MpesaAccessToken, LipanaMpesaPpassword
+import json, os
+from . credentials import MpesaAccessToken, LipanaMpesaPassword
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
-
 
 
 def home(request):
@@ -14,9 +13,9 @@ def home(request):
 
 
 def token(request):
-    consumer_key = '77bgGpmlOxlgJu6oEXhEgUgnu0j2WYxA'
-    consumer_secret = 'viM8ejHgtEmtPTHd'
-    api_URL = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    consumer_key = os.getenv('CONSUMER_KEY')
+    consumer_secret = os.getenv('CONSUMER_SECRET')
+    api_URL = os.getenv('API_URL')
 
     r = requests.get(api_URL, auth=HTTPBasicAuth(
         consumer_key, consumer_secret))
@@ -32,20 +31,20 @@ def pay(request):
         phone = request.POST['phone']
         amount = request.POST['amount']
         access_token = MpesaAccessToken.validated_mpesa_access_token
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+        api_url = os.getenv('API_URL')
         headers = {"Authorization": "Bearer %s" % access_token}
         request = {
-            "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
-            "Password": LipanaMpesaPpassword.decode_password,
-            "Timestamp": LipanaMpesaPpassword.lipa_time,
+            "BusinessShortCode": LipanaMpesaPassword.Business_short_code,
+            "Password": LipanaMpesaPassword.decode_password,
+            "Timestamp": LipanaMpesaPassword.lipa_time,
             "TransactionType": "CustomerPayBillOnline",
             "Amount": amount,
             "PartyA": phone,
-            "PartyB": LipanaMpesaPpassword.Business_short_code,
+            "PartyB": LipanaMpesaPassword.Business_short_code,
             "PhoneNumber": phone,
             "CallBackURL": "https://sandbox.safaricom.co.ke/mpesa/",
-            "AccountReference": "Erick were",
-            "TransactionDesc": "Web Development Charges"
+            "AccountReference": "Cynthia Inc",
+            "TransactionDesc": "Web Dev Charges"
         }
 
         
